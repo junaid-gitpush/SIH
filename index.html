@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang='en'>
+<head>
+  <meta charset='utf-8' />
+  <meta name='viewport' content='width=device-width,initial-scale=1' />
+  <title>Alumni Manager — HTML</title>
+  <style>
+    :root{--bg:#f8fafc;--card:#fff;--muted:#6b7280;--accent:#4f46e5;--border:#e6e7ee}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Helvetica,Arial;margin:0;background:var(--bg);color:#0f172a}
+    .container{max-width:1100px;margin:28px auto;padding:18px}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;gap:10px;align-items:center}
+    .logo{width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);display:flex;align-items:center;justify-content:center;color:white;font-weight:700}
+    h1{margin:0;font-size:20px}
+    .controls{display:flex;gap:8px;align-items:center}
+    input[type=search],select,textarea,input[type=text]{padding:8px;border:1px solid var(--border);border-radius:8px;background:white}
+    button{background:var(--accent);border:none;color:white;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+    .card{background:var(--card);border:1px solid var(--border);padding:14px;border-radius:10px}
+    .stats{display:flex;gap:10px}
+    .stat{flex:1;padding:10px;border-radius:8px;background:linear-gradient(90deg,rgba(79,70,229,0.05),transparent)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;text-align:left;border-bottom:1px solid #f1f5f9}
+    th{color:var(--muted);font-size:13px}
+    .avatar{width:36px;height:36px;border-radius:50%;background:#e2e8f0;display:inline-flex;align-items:center;justify-content:center;font-weight:600}
+    .badge{font-size:12px;padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3}
+    .small{font-size:13px;color:var(--muted)}
+    .events{display:flex;flex-direction:column;gap:10px}
+    .event{padding:8px;border-radius:8px;border:1px dashed #eef2ff}
+    .actions{display:flex;gap:8px}
+    .secondary{background:white;color:var(--accent);border:1px solid var(--border)}
+    .file-input{display:none}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:flex;align-items:center;justify-content:center}
+    .modal{width:520px;background:white;border-radius:10px;padding:18px;border:1px solid var(--border)}
+    @media (max-width:900px){.grid{grid-template-columns:1fr} .modal{width:92%}}
+  </style>
+</head>
+<body>
+  <div class='container'>
+    <header>
+      <div class='brand'>
+        <div class='logo'>AC</div>
+        <div>
+          <h1>Alumni Manager</h1>
+          <div class='small'>Manage alumni data, events & engagement</div>
+        </div>
+      </div>
+
+      <div class='controls'>
+        <input id='globalSearch' type='search' placeholder='Search name, email, city...' style='width:260px' />
+        <select id='deptFilter'>
+          <option value='All'>All Departments</option>
+        </select>
+        <button id='importBtn' class='secondary'>Import CSV</button>
+        <button id='exportBtn' class='secondary'>Export CSV</button>
+        <label class='secondary' style='padding:8px 10px;border-radius:8px;cursor:pointer'><input id='fileInput' class='file-input' type='file' accept='.csv' />Upload</label>
+      </div>
+    </header>
+
+    <main class='grid'>
+      <section>
+        <div class='card' style='margin-bottom:12px'>
+          <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px'>
+            <div style='font-weight:600'>Dashboard</div>
+            <div style='display:flex;gap:8px;align-items:center'>
+              <button id='bulkMessage' class='secondary'>Bulk Message</button>
+              <button id='composeNews'>Compose Newsletter</button>
+            </div>
+          </div>
+
+          <div class='stats' style='margin-bottom:12px'>
+            <div class='stat'>
+              <div class='small'>Total alumni</div>
+              <div style='font-size:20px;font-weight:700' id='countTotal'>0</div>
+              <div style='font-size:12px;color:var(--muted)'>Export or filter lists for communication</div>
+            </div>
+            <div class='stat'>
+              <div class='small'>Active / Engaged</div>
+              <div style='font-size:20px;font-weight:700' id='countEngaged'>0</div>
+              <div style='font-size:12px;color:var(--muted)'>Scored by interactions & RSVPs</div>
+            </div>
+            <div class='stat'>
+              <div class='small'>Low engagement</div>
+              <div style='font-size:20px;font-weight:700' id='countLow'>0</div>
+              <div style='font-size:12px;color:var(--muted)'>Target these alumni</div>
+            </div>
+          </div>
+
+          <div style='margin-bottom:8px'>
+            <div class='small' style='margin-bottom:6px'>Engagement (last 7 months)</div>
+            <svg id='engChart' width='100%' height='80' viewBox='0 0 600 80' preserveAspectRatio='none' style='background:#fff;border-radius:6px'></svg>
+          </div>
+        </div>
+
+        <div class='card'>
+          <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>
+            <div style='font-weight:600'>Alumni</div>
+            <div class='small' id='resultCount'>0 results</div>
+          </div>
+
+          <div style='overflow:auto;max-height:460px'>
+            <table id='alumniTable'>
+              <thead>
+                <tr><th>Name</th><th>Batch</th><th>Dept</th><th>City</th><th>Engagement</th><th>Actions</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <aside>
+        <div class='card'>
+          <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'>
+            <div style='font-weight:600'>Upcoming Events</div>
+            <div class='badge'>Events</div>
+          </div>
+          <div class='events' id='eventsList'></div>
+        </div>
+
+        <div class='card' style='margin-top:12px'>
+          <div style='font-weight:600;margin-bottom:8px'>Compose Newsletter</div>
+          <form id='newsletterForm'>
+            <div style='margin-bottom:8px'><input id='newsSubject' type='text' placeholder='Subject' style='width:100%' required /></div>
+            <div style='margin-bottom:8px'><textarea id='newsBody' placeholder='Write message...' style='width:100%;height:120px'></textarea></div>
+            <div style='text-align:right'><button type='submit'>Send</button></div>
+          </form>
+        </div>
+      </aside>
+    </main>
+
+    <footer style='text-align:center;margin-top:18px;color:var(--muted);font-size:13px'>Prototype — replace with real API & authentication for production</footer>
+  </div>
+
+  <div id='modalRoot' style='display:none'></div>
+
+  <script>
+    var SAMPLE_ALUMNI = [
+      {id:1,name:'Priya Sharma',batch:2012,dept:'CSE',city:'Mumbai',email:'priya@example.com',engaged:8,notes:''},
+      {id:2,name:'Rohit Verma',batch:2014,dept:'ECE',city:'Delhi',email:'rohit@example.com',engaged:4,notes:''},
+      {id:3,name:'Sneha Patel',batch:2018,dept:'ME',city:'Ahmedabad',email:'sneha@example.com',engaged:12,notes:''},
+      {id:4,name:'Aman Singh',batch:2010,dept:'CSE',city:'Bengaluru',email:'aman@example.com',engaged:2,notes:''},
+      {id:5,name:'Nikita Rao',batch:2016,dept:'IT',city:'Hyderabad',email:'nikita@example.com',engaged:6,notes:''}
+    ];
+
+    var SAMPLE_EVENTS = [
+      {id:'e1',title:'Annual Alumni Meet 2025',date:'2025-11-10',location:'Main Auditorium',rsvps:120},
+      {id:'e2',title:'Career Workshop — Startups',date:'2025-09-30',location:'Online',rsvps:75}
+    ];
+
+    var alumni = SAMPLE_ALUMNI.slice();
+    var dom = {
+      tableBody: document.querySelector('#alumniTable tbody'),
+      resultCount: document.getElementById('resultCount'),
+      countTotal: document.getElementById('countTotal'),
+      countEngaged: document.getElementById('countEngaged'),
+      countLow: document.getElementById('countLow'),
+      deptFilter: document.getElementById('deptFilter'),
+      search: document.getElementById('globalSearch'),
+      eventsList: document.getElementById('eventsList'),
+      engChart: document.getElementById('engChart'),
+      fileInput: document.getElementById('fileInput'),
+      importBtn: document.getElementById('importBtn'),
+      exportBtn: document.getElementById('exportBtn'),
+      newsletterForm: document.getElementById('newsletterForm')
+    };
+
+    function uniq(arr){
+      var s = {}; arr.forEach(function(x){ s[x] = true }); return Object.keys(s);
+    }
+
+    function renderDeptOptions(){
+      var depts = ['All'].concat(uniq(alumni.map(function(a){ return a.dept })));
+      dom.deptFilter.innerHTML = depts.map(function(d){ return "<option value='"+d+"'>"+d+"</option>" }).join('');
+    }
+
+    function renderCounts(){
+      dom.countTotal.textContent = alumni.length;
+      dom.countEngaged.textContent = alumni.filter(function(a){ return a.engaged>=6 }).length;
+      dom.countLow.textContent = alumni.filter(function(a){ return a.engaged<6 }).length;
+    }
+
+    function renderEvents(){
+      dom.eventsList.innerHTML = SAMPLE_EVENTS.map(function(ev){
+        return "<div class='event'><div style='font-weight:600'>"+ev.title+"</div><div class='small'>"+ev.date+" · "+ev.location+"</div><div style='margin-top:8px;display:flex;justify-content:space-between;align-items:center'><div class='small'>"+ev.rsvps+" RSVPs</div><div class='actions'><button class='secondary' data-rsvp='"+ev.id+"'>RSVP</button><button class='secondary' data-share='"+ev.id+"'>Share</button></div></div></div>";
+      }).join('');
+      dom.eventsList.querySelectorAll('[data-rsvp]').forEach(function(btn){ btn.addEventListener('click',function(e){ alert('RSVP recorded (mock) for '+e.currentTarget.dataset.rsvp) }) });
+      dom.eventsList.querySelectorAll('[data-share]').forEach(function(btn){ btn.addEventListener('click',function(e){ var id = e.currentTarget.dataset.share; if(navigator.clipboard) navigator.clipboard.writeText(location.href + '#event-' + id).then(function(){ alert('Share link copied (mock)') }) }) });
+    }
+
+    function renderTable(filterText, dept){
+      filterText = (filterText || '').toLowerCase(); dept = dept || 'All';
+      var rows = alumni.filter(function(a){
+        var s = (a.name + ' ' + a.email + ' ' + a.city).toLowerCase();
+        var q = s.indexOf(filterText) !== -1;
+        var d = (dept === 'All') || (a.dept === dept);
+        return q && d;
+      });
+      dom.resultCount.textContent = rows.length + ' results';
+      dom.tableBody.innerHTML = rows.map(function(a){
+        return "<tr data-id='"+a.id+"'><td><div style='display:flex;gap:10px;align-items:center'><div class='avatar'>"+a.name.split(' ').map(function(s){return s[0]}).slice(0,2).join('')+"</div><div><div style='font-weight:600'>"+a.name+"</div><div class='small'>"+a.email+"</div></div></div></td><td>"+a.batch+"</td><td>"+a.dept+"</td><td>"+a.city+"</td><td><span class='badge'>"+a.engaged+" pts</span></td><td><div class='actions'><button class='secondary' data-view='"+a.id+"'>View</button><button class='secondary' data-msg='"+a.id+"'>Message</button></div></td></tr>"
+      }).join('');
+
+      dom.tableBody.querySelectorAll('[data-view]').forEach(function(btn){ btn.addEventListener('click',function(e){ openProfile(+e.currentTarget.dataset.view) }) });
+      dom.tableBody.querySelectorAll('[data-msg]').forEach(function(btn){ btn.addEventListener('click',function(e){ alert('Open messaging UI (mock) to ' + alumni.find(function(x){ return x.id === +e.currentTarget.dataset.msg }).email) }) });
+    }
+
+    function drawEngChart(){
+      var series = [20,35,28,45,50,42,60];
+      var svg = dom.engChart; svg.innerHTML = '';
+      var w = 600, h = 80, pad = 8;
+      var max = Math.max.apply(null, series);
+      var step = (w - 2*pad) / (series.length - 1);
+      var pts = series.map(function(v,i){ return (pad + i*step) + ',' + (h - pad - ((v/max)*(h - 2*pad))) }).join(' ');
+      var svgns = 'http://www.w3.org/2000/svg';
+      var poly = document.createElementNS(svgns, 'polyline');
+      poly.setAttribute('points', pts); poly.setAttribute('fill', 'none'); poly.setAttribute('stroke', '#4f46e5'); poly.setAttribute('stroke-width', '2');
+      svg.appendChild(poly);
+      var path = document.createElementNS(svgns, 'path');
+      var d = 'M ' + pts.split(' ').join(' L ') + ' L ' + (w - pad) + ',' + (h - pad) + ' L ' + pad + ',' + (h - pad) + ' Z';
+      path.setAttribute('d', d); path.setAttribute('fill', 'rgba(79,70,229,0.08)');
+      svg.appendChild(path);
+    }
+
+    function openProfile(id){
+      var a = alumni.find(function(x){ return x.id === id });
+      var modalRoot = document.getElementById('modalRoot'); modalRoot.style.display = 'block';
+      modalRoot.innerHTML = "<div class='modal-backdrop'><div class='modal' role='dialog' aria-modal='true'><div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'><div><div style='font-weight:700'>"+a.name+"</div><div class='small'>"+a.dept+" · Batch "+a.batch+"</div></div><button id='closeModal' class='secondary'>Close</button></div><div style='margin-bottom:8px'><strong>Email:</strong> " + a.email + "</div><div style='margin-bottom:8px'><strong>City:</strong> " + a.city + "</div><div style='margin-bottom:8px'><strong>Engagement score:</strong> <span class='badge'>"+a.engaged+"</span></div><div style='margin-top:10px'><strong>Notes</strong><div><textarea id='noteText' style='width:100%;height:120px;margin-top:6px'>"+(a.notes||'')+"</textarea></div></div><div style='margin-top:12px;text-align:right'><button id='saveNote'>Save</button></div></div></div>";
+      document.getElementById('closeModal').addEventListener('click',closeModal);
+      document.getElementById('saveNote').addEventListener('click',function(){ a.notes = document.getElementById('noteText').value; alert('Notes saved (mock)'); closeModal(); });
+    }
+    function closeModal(){ var mr = document.getElementById('modalRoot'); mr.style.display = 'none'; mr.innerHTML = ''; }
+
+    function toCSV(data){
+      var keys = ['id','name','batch','dept','city','email','engaged','notes'];
+      var rows = [keys.join(',')];
+      data.forEach(function(r){ rows.push(keys.map(function(k){ return '"' + String(r[k]||'').replace(/"/g,'""') + '"' }).join(',')) });
+      return rows.join('\n');
+    }
+
+    function downloadCSV(){ var csv = toCSV(alumni); var blob = new Blob([csv],{type:'text/csv'}); var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = 'alumni-list.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); }
+
+    function parseCSV(text){
+      var lines = text.split('\n').map(function(l){ return l.trim() }).filter(function(l){ return l.length>0 });
+      if(lines.length < 2) return [];
+      var headers = lines[0].split(',').map(function(h){ return h.replace(/^\"|\"$/g,'') });
+      var rows = lines.slice(1).map(function(l){ return l.split(',').map(function(c){ return c.replace(/^\"|\"$/g,'') }) });
+      return rows.map(function(r){ var obj = {}; headers.forEach(function(h,i){ obj[h] = r[i] || ''; }); return obj; });
+    }
+
+    dom.fileInput.addEventListener('change',function(e){ var f = e.target.files[0]; if(!f) return; var reader = new FileReader(); reader.onload = function(){ try{ var parsed = parseCSV(reader.result); var mapped = parsed.map(function(r,i){ return { id: Date.now()+i, name: r.name || r.Name || 'Unknown', batch: parseInt(r.batch) || parseInt(r.Batch) || 2020, dept: r.dept || r.Dept || 'NA', city: r.city || r.City || '', email: r.email || r.Email || '', engaged: parseInt(r.engaged) || 0, notes: r.notes || '' } }); alumni = alumni.concat(mapped); renderAll(); alert('Imported ' + mapped.length + ' rows (mock)') }catch(err){ alert('Failed to parse CSV: ' + err.message) } }; reader.readAsText(f); });
+    dom.importBtn.addEventListener('click',function(){ dom.fileInput.click() }); dom.exportBtn.addEventListener('click',downloadCSV);
+
+    dom.newsletterForm.addEventListener('submit',function(e){ e.preventDefault(); var subj = document.getElementById('newsSubject').value; alert('Newsletter sent (mock) to ' + alumni.length + ' alumni\nSubject: ' + subj); e.target.reset(); });
+
+    dom.search.addEventListener('input',function(){ renderTable(dom.search.value, dom.deptFilter.value) }); dom.deptFilter.addEventListener('change',function(){ renderTable(dom.search.value, dom.deptFilter.value) });
+
+    function renderAll(){ renderDeptOptions(); renderCounts(); renderEvents(); renderTable('', 'All'); drawEngChart(); }
+    renderAll();
+
+    document.getElementById('composeNews').addEventListener('click',function(){ window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); document.getElementById('newsSubject').focus(); });
+    document.getElementById('bulkMessage').addEventListener('click',function(){ alert('Open bulk messaging UI (mock) — implement with your messaging provider') });
+  </script>
+</body>
+</html>
