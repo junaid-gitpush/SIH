@@ -1,0 +1,7 @@
+import React from 'react';
+
+const DirectoryPage = () => {
+  return <div className="p-8"><h1 className="text-2xl font-bold">Alumni Directory</h1></div>;
+};
+
+export default DirectoryPage;
