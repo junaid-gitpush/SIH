@@ -8,22 +8,13 @@ dotenv.config();
 const app = express();
 
 // Middleware to parse JSON
-const allowedOrigins = [
-  'http://localhost:5173', // Your local frontend for development
-  'https://sih-alumni-iota.vercel.app' // Your deployed Vercel frontend
-];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
-  }
-}));
+const corsOptions = {
+  origin: 'https://sih-alumni-iota.vercel.app', // Your Vercel URL
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
