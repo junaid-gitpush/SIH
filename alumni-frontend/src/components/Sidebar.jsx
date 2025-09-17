@@ -1,10 +1,19 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 // A helper component for icons to keep the NavLink clean
 const NavIcon = ({ iconClass }) => <i className={`${iconClass} w-6 h-6 mr-3`}></i>;
 
 const Sidebar = () => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   // This function applies different styles based on whether the link is active
   const getNavLinkClass = ({ isActive }) =>
     `flex items-center px-4 py-3 rounded-lg text-gray-700 transition-colors duration-200 ${
@@ -48,6 +57,12 @@ const Sidebar = () => {
                 Donate
               </NavLink>
             </li>
+            <li className="mt-2">
+              <button onClick={handleLogout} className="flex items-center px-4 py-3 rounded-lg text-gray-700 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                <NavIcon iconClass="fas fa-sign-out-alt" />
+                Logout
+              </button>
+            </li>
           </ul>
         </nav>
       </div>
@@ -56,4 +71,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-

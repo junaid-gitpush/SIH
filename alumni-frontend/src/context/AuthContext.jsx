@@ -1,44 +1,49 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-// Create the context
 const AuthContext = createContext(null);
 
-// Create the provider component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(() => localStorage.getItem('token'));
 
   useEffect(() => {
-    // This effect runs on initial load to check if a token exists
-    // In a real app, you'd verify this token with your backend
     if (token) {
-      // For now, we'll assume the token is valid and set a placeholder user
-      // Later, we can decode the token or fetch user data
-      setUser({ isAuthenticated: true });
+      // When the token changes, try to load the user from localStorage
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        }
+      } catch (error) {
+        // If user data in localStorage is corrupt, log out
+        console.error("Failed to parse user from localStorage", error);
+        logout();
+      }
+    } else {
+      // If no token, ensure user is null
+      setUser(null);
     }
-    setLoading(false); // Finished loading
   }, [token]);
 
-  const login = (newToken) => {
-    localStorage.setItem('token', newToken);
-    setToken(newToken);
-    setUser({ isAuthenticated: true });
+  const login = (userData, userToken) => {
+    localStorage.setItem('token', userToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    setToken(userToken);
+    setUser(userData);
   };
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     setToken(null);
     setUser(null);
   };
 
-  // The value provided to consuming components
-  const value = { user, token, login, logout, loading };
+  const value = { user, token, login, logout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Create a custom hook to use the auth context
 export const useAuth = () => {
   return useContext(AuthContext);
 };

@@ -19,38 +19,35 @@ const DirectoryPage = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // --- Data Fetching ---
-  // This effect runs once on component mount to fetch all alumni data.
   useEffect(() => {
     const fetchAlumni = async () => {
       setIsLoading(true);
       try {
-        // Fetches all alumni from your backend API
         const data = await alumniAPI.getAllAlumni();
-        setAlumniData(data); // Store the original full list
-        setFilteredAlumni(data); // Set the initial list to be displayed
+        setAlumniData(data);
+        setFilteredAlumni(data);
       } catch (error) {
         console.error('Error fetching alumni:', error);
-        // You could add a state here to show an error message to the user
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchAlumni();
-  }, []); // Empty dependency array ensures this runs only once
+  }, []);
 
   // --- Search and Filter Logic ---
-  // This effect re-runs whenever the search term, filters, or the base alumni data change.
   useEffect(() => {
     let filtered = [...alumniData];
 
     // Search filter
     if (searchTerm) {
+      const lowercasedSearchTerm = searchTerm.toLowerCase();
       filtered = filtered.filter(alumni =>
-        alumni.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (alumni.company && alumni.company.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (alumni.location && alumni.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (alumni.jobTitle && alumni.jobTitle.toLowerCase().includes(searchTerm.toLowerCase()))
+        alumni.name.toLowerCase().includes(lowercasedSearchTerm) ||
+        (alumni.company && alumni.company.toLowerCase().includes(lowercasedSearchTerm)) ||
+        (alumni.location && alumni.location.toLowerCase().includes(lowercasedSearchTerm)) ||
+        (alumni.jobTitle && alumni.jobTitle.toLowerCase().includes(lowercasedSearchTerm))
       );
     }
 
@@ -67,22 +64,20 @@ const DirectoryPage = () => {
       filtered = filtered.filter(alumni => alumni.location === filters.location);
     }
     if (filters.companyType) {
-        filtered = filtered.filter(alumni => {
-            if (!alumni.company) return false;
-            const companyLower = alumni.company.toLowerCase();
-            switch (filters.companyType) {
-                case 'Tech':
-                    return ['google', 'microsoft', 'amazon', 'adobe', 'flipkart', 'swiggy', 'paytm', 'zomato'].some(tech => companyLower.includes(tech));
-                case 'Finance':
-                    return ['deloitte', 'goldman', 'jpmorgan', 'citi'].some(finance => companyLower.includes(finance));
-                case 'Healthcare':
-                    return ['apollo', 'fortis', 'max', 'manipal'].some(health => companyLower.includes(health));
-                case 'Education':
-                    return ['byju', 'unacademy', 'vedantu'].some(edu => companyLower.includes(edu));
-                default:
-                    return true;
-            }
-        });
+      // A more scalable approach would be to have company types sent from the backend
+      // For now, we'll keep the logic but it should be noted this is not ideal.
+      filtered = filtered.filter(alumni => {
+        if (!alumni.company) return false;
+        const companyLower = alumni.company.toLowerCase();
+        // This is a simplified example. A better approach is to have this mapping on the backend.
+        const companyCategories = {
+          Tech: ['google', 'microsoft', 'amazon', 'adobe', 'flipkart', 'swiggy', 'paytm', 'zomato'],
+          Finance: ['deloitte', 'goldman', 'jpmorgan', 'citi'],
+          Healthcare: ['apollo', 'fortis', 'max', 'manipal'],
+          Education: ['byju', 'unacademy', 'vedantu']
+        };
+        return (companyCategories[filters.companyType] || []).some(c => companyLower.includes(c));
+      });
     }
 
     setFilteredAlumni(filtered);

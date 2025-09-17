@@ -7,7 +7,18 @@ const FilterSection = ({
   viewMode, 
   onViewModeChange 
 }) => {
-  const graduationYears = ['2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+  // --- Dynamic Year Generation ---
+  const generateYearOptions = () => {
+    const startYear = 2019;
+    const endYear = 2029; // Changed to 2029
+    const years = [];
+    for (let i = endYear; i >= startYear; i--) {
+      years.push(i.toString());
+    }
+    return years;
+  };
+
+  const graduationYears = generateYearOptions();
   const departments = ['Computer Science', 'Engineering', 'Business', 'Arts', 'Science'];
   const locations = ['Bangalore', 'Mumbai', 'Delhi', 'Chennai', 'Pune', 'Noida', 'Gurgaon'];
   const companyTypes = ['Tech', 'Finance', 'Healthcare', 'Education'];

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const LoginPage = () => {
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -20,8 +22,7 @@ const LoginPage = () => {
     try {
       const res = await axios.post('http://localhost:5000/api/auth/login', formData);
       // On success, save the token and redirect
-      localStorage.setItem('token', res.data.token);
-      // TODO: We will redirect to a dashboard page next
+      login(res.data.user, res.data.token); // Update the auth context
       navigate('/dashboard'); 
     } catch (err) {
       console.error(err);
